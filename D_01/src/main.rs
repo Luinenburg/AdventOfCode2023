@@ -1,5 +1,11 @@
 use std::fs;
 
+fn findNumberInString(lineWithNums: String) -> i32
+{
+    let mut possibleNumIndexes: Vec<i32> = Vec::new();
+    return 0;    
+}
+
 fn main()
 {
     let binding = fs::read_to_string("input.txt")
@@ -15,9 +21,10 @@ fn main()
         { if c.is_numeric() { num.push(c); break; } }
         for c in y.chars().rev()
         { if c.is_numeric() { num.push(c); break; } }
+        if num == "" { continue; }
         match num.parse() {
             Ok(n) => nums.push(n),
-            Err(e) => println!("oh shit"),
+            Err(e) => println!("{num}"),
         }
     }
     let mut i = 0;
