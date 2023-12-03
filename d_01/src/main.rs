@@ -1,33 +1,70 @@
-use std::fs;
-
-fn find_number_in_string(line_with_nums: &str) -> i32
+fn find_numbers_in_string(line_with_nums: &str) -> Vec<(usize, usize)>
 {
-    let nums_as_string = vec!["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"];
-    let mut possible_num_indexes: Vec<usize> = Vec::new();
-    for idk_a_name in nums_as_string
+    let numbers_as_string = vec!["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"];
+    let numbers_as_numbers = vec!["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"];
+    let mut indexes_of_numbers: Vec<(usize, usize)> = Vec::new();
+    for (index, numbers) in numbers_as_string.iter().enumerate()
     {
-        match line_with_nums.find(idk_a_name)
+        match line_with_nums.find(numbers)
         {
-            Some(n) => possible_num_indexes.push(n),
+            Some(n) => indexes_of_numbers.push((n, index)),
+            None => continue,
+        }
+        match line_with_nums.rfind(numbers)
+        {
+            Some(n) => indexes_of_numbers.push((n, index)),
             None => continue,
         }
     }
-    for n in possible_num_indexes {
-        println!("{n}");
+    for (index, numbers) in numbers_as_numbers.iter().enumerate()
+    {
+        match line_with_nums.find(numbers)
+        {
+            Some(n) => indexes_of_numbers.push((n, index)),
+            None => continue,
+        }
+        match line_with_nums.rfind(numbers)
+        {
+            Some(n) => indexes_of_numbers.push((n, index)),
+            None => continue,
+        }
     }
-    return 0;    
+    indexes_of_numbers
+}
+
+fn mins_and_maxes(set: &[(usize, usize)]) -> usize
+{
+    if set.len() == 1 { return set[0].1 + set[0].1*10; }
+    let mut min_num = 0;
+    let mut min_index = 100000;
+    let mut max_num = 0;
+    let mut max_index = 0;
+    for pair in set
+    {
+        if pair.0 < min_index
+        {
+            min_index = pair.0;
+            min_num = pair.1;
+        }
+        if pair.0 >= max_index
+        {
+            max_index = pair.0;
+            max_num = pair.1;
+        }
+    }
+    min_num*10 + max_num
 }
 
 fn main()
 {
-    let binding = fs::read_to_string("example.txt")
-        .expect("Should have been able to read file");
-    let mut file_contents: Vec<_> = binding.split("\n").collect();
+    let file_contents: Vec<&str> = include_str!("input.txt")
+        .trim_end()
+        .split("\n")
+        .collect();
     let mut nums: Vec<i32> = Vec::new();
     
-    while let Some(y) = file_contents.pop()
+    for y in &file_contents
     {
-        find_number_in_string(y);
         let mut num: String = String::new();
         for c in y.chars()
         { if c.is_numeric() { num.push(c); break; } }
@@ -40,10 +77,18 @@ fn main()
         }
     }
 
+    let mut sum = 0;
+    for y in &file_contents
+    {
+        sum += mins_and_maxes(&find_numbers_in_string(y));
+        println!("{} {}", mins_and_maxes(&find_numbers_in_string(y)), y)
+    }
     let mut i = 0;
     while let Some(y) = nums.pop()
     {
         i += y;
     }
     println!("{i}");
+    println!("{}", sum);
+    println!("{:#?}", find_numbers_in_string(file_contents[0]))
 }
