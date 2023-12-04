@@ -29,7 +29,7 @@ fn find_nums_around_symbol(symbol: char, data: &[&str], position: (isize, isize)
             if checked_positions.contains(&(row, column - 1)) || checked_positions.contains(&(row, column + 1)) { continue; }
 
             if data[row].chars().nth(column).unwrap().is_numeric() {
-                nums_around_symbol.insert(find_complete_number(&data, (row, column)));
+                nums_around_symbol.insert(find_complete_number(data, (row, column)));
             }
         }
     }
