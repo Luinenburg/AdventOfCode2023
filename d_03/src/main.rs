@@ -19,14 +19,12 @@ fn find_complete_number(data: &[&str], position: (usize, usize)) -> usize {
 
 fn find_nums_around_symbol(symbol: char, data: &[&str], position: (isize, isize)) -> (char, HashSet<usize>) {
     let mut nums_around_symbol: HashSet<usize> = HashSet::new();
-    let mut checked_positions: Vec<(usize, usize)> = vec![];
     for mut row_mod in -1..=1 {
         for mut column_mod in -1..=1 {
             if position.0 + row_mod < 0 || position.0 + row_mod >= data.len() as isize {row_mod = 0;}
             let row = (position.0+row_mod) as usize;
             if position.1 + column_mod < 0 || position.1 + column_mod >= data[row].len() as isize {column_mod = 0;}
             let column = (position.1+column_mod) as usize;
-            if checked_positions.contains(&(row, column - 1)) || checked_positions.contains(&(row, column + 1)) { continue; }
 
             if data[row].chars().nth(column).unwrap().is_numeric() {
                 nums_around_symbol.insert(find_complete_number(data, (row, column)));
