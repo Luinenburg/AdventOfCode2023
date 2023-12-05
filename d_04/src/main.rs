@@ -7,7 +7,16 @@ fn wins_per_game(data_input: &[(Vec<i32>, Vec<i32>)]) -> Vec<usize>
 }
 
 fn part_two(data_input: &[(Vec<i32>, Vec<i32>)]) -> i32 {
-    unimplemented!()
+    let multipliers = wins_per_game(data_input);
+    let mut num_of_cards: Vec<i32> = vec![1; multipliers.len().try_into().unwrap()];
+    for (index, multiplier) in multipliers.iter().enumerate() {
+        let binding = *multiplier as i32;
+        for i in 1..=binding {
+            let offset = index + i as usize;
+            num_of_cards[offset] += num_of_cards[index];
+        }
+    }
+    num_of_cards.iter().sum()
 }
 
 fn part_one(data_input: &[(Vec<i32>, Vec<i32>)]) -> i32 {
