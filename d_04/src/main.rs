@@ -10,8 +10,7 @@ fn part_two(data_input: &[(Vec<i32>, Vec<i32>)]) -> i32 {
     let multipliers = wins_per_game(data_input);
     let mut num_of_cards: Vec<i32> = vec![1; multipliers.len().try_into().unwrap()];
     for (index, multiplier) in multipliers.iter().enumerate() {
-        let binding = *multiplier as i32;
-        for i in 1..=binding {
+        for i in 1..=*multiplier as i32 {
             let offset = index + i as usize;
             num_of_cards[offset] += num_of_cards[index];
         }
@@ -42,7 +41,6 @@ fn main() {
             )
         })
         .collect();
-
 
 
     println!("{}", part_one(&data_input));
