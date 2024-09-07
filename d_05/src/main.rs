@@ -1,7 +1,6 @@
 use itertools::Itertools;
 
-fn generate_path_of_seed(seed: usize, maps: &[Vec<(usize, usize, usize)>]) -> Vec<usize>
-{
+fn generate_path_of_seed(seed: usize, maps: &[Vec<(usize, usize, usize)>]) -> Vec<usize> {
     let mut current_step: usize = seed;
     let mut path = vec![current_step];
     for map in maps {
@@ -17,8 +16,7 @@ fn generate_path_of_seed(seed: usize, maps: &[Vec<(usize, usize, usize)>]) -> Ve
     return path;
 }
 
-fn follow_seed_without_gen(seed: usize, maps: &[Vec<(usize, usize, usize)>]) -> usize
-{
+fn follow_seed_without_gen(seed: usize, maps: &[Vec<(usize, usize, usize)>]) -> usize {
     let mut current_step: usize = seed;
     for map in maps {
         for (destination, source, offset) in map {
@@ -32,11 +30,14 @@ fn follow_seed_without_gen(seed: usize, maps: &[Vec<(usize, usize, usize)>]) -> 
     return current_step;
 }
 
-fn generate_path_of_location(location: usize, maps: &[Vec<(usize, usize, usize)>]) -> Vec<usize>
-{
+fn generate_path_of_location(location: usize, maps: &[Vec<(usize, usize, usize)>]) -> Vec<usize> {
     let mut current_step: usize = location;
     let mut path: Vec<usize> = vec![current_step];
-    for map in maps.into_iter().rev().collect::<Vec<&Vec<(usize, usize, usize)>>>() {
+    for map in maps
+        .into_iter()
+        .rev()
+        .collect::<Vec<&Vec<(usize, usize, usize)>>>()
+    {
         for (destination, source, offset) in map {
             if *destination > current_step || *destination + *offset < current_step {
                 continue;
@@ -49,8 +50,11 @@ fn generate_path_of_location(location: usize, maps: &[Vec<(usize, usize, usize)>
     path
 }
 
-fn follow_path_of_locations(location_max: usize, seed_ranges: &[(usize, usize)], maps: &[Vec<(usize, usize, usize)>]) -> usize
-{
+fn follow_path_of_locations(
+    location_max: usize,
+    seed_ranges: &[(usize, usize)],
+    maps: &[Vec<(usize, usize, usize)>],
+) -> usize {
     for location in 0..=location_max {
         let seed = *generate_path_of_location(location, maps).last().unwrap();
         for (seed_min, seed_max) in seed_ranges {
@@ -62,30 +66,34 @@ fn follow_path_of_locations(location_max: usize, seed_ranges: &[(usize, usize)],
     0
 }
 
-fn follow_path_of_seed_ranges(seed_ranges: &[(usize, usize)], maps: &[Vec<(usize, usize, usize)>]) -> usize
-{
-    let num = seed_ranges.iter().map(|seed_range| {
-        (seed_range.0..=seed_range.1).map(|seed| {
-            follow_seed_without_gen(seed, maps)
-        }).min().unwrap()
-    }).min().unwrap();
-    println!("{:#?}", num);
+fn follow_path_of_seed_ranges(
+    seed_ranges: &[(usize, usize)],
+    maps: &[Vec<(usize, usize, usize)>],
+) -> usize {
+    let num = seed_ranges
+        .iter()
+        .map(|seed_range| {
+            (seed_range.0..=seed_range.1)
+                .map(|seed| follow_seed_without_gen(seed, maps))
+                .min()
+                .unwrap()
+        })
+        .min()
+        .unwrap();
     num
 }
 
 fn main() {
-    let data_input: Vec<Vec<&str>> = include_str!("example.txt")
+    let data_input: Vec<Vec<&str>> = include_str!("input.txt")
         .split("\n\n")
-        .map(|x|
-            x.lines()
-                .collect::<Vec<_>>())
+        .map(|x| x.lines().collect::<Vec<_>>())
         .collect();
 
-    let seeds: Vec<usize> = data_input[0][0].strip_prefix("seeds: ")
+    let seeds: Vec<usize> = data_input[0][0]
+        .strip_prefix("seeds: ")
         .unwrap()
         .split_whitespace()
-        .map(|x| x.parse::<usize>()
-            .unwrap())
+        .map(|x| x.parse::<usize>().unwrap())
         .collect();
 
     let seed_ranges: Vec<(usize, usize)> = {
@@ -102,38 +110,53 @@ fn main() {
         .map(|section: &Vec<&str>| {
             let mut val = section[1..]
                 .iter()
-                .map(|line: &&str|
+                .map(|line: &&str| {
                     line.split_whitespace()
                         .flat_map(str::parse)
-                        .collect_tuple().unwrap())
+                        .collect_tuple()
+                        .unwrap()
+                })
                 .collect::<Vec<_>>();
             val.sort();
             val
         })
         .collect();
 
-    let location_max: usize = maps.last()
-        .unwrap()
-        .last()
-        .unwrap()
-        .0 + maps
-        .last()
-        .unwrap()
-        .last()
-        .unwrap()
-        .2;
+    let locations: Vec<(usize, usize)> = {
+        maps.last()
+            .unwrap()
+            .into_iter()
+            .map(|humidity_to_location| {
+                (
+                    humidity_to_location.1,
+                    humidity_to_location.1 + humidity_to_location.2,
+                )
+            })
+            .collect()
+    };
+
+    let location_max: usize =
+        maps.last().unwrap().last().unwrap().0 + maps.last().unwrap().last().unwrap().2;
 
     let minimum: usize = seeds
         .iter()
         .map(|seed| {
             let s = generate_path_of_seed(*seed, maps);
-            *s.last()
-                .unwrap()
+            *s.last().unwrap()
         })
         .min()
         .unwrap();
 
     println!("{:#?}", minimum);
-    println!("{:#?}", follow_path_of_locations(location_max, &seed_ranges, maps));
-    follow_path_of_seed_ranges(&seed_ranges, maps);
+    println!(
+        "{:#?}",
+        locations
+            .into_iter()
+            .flat_map(|location_range| (location_range.0..location_range.1).collect_vec())
+            .sorted()
+            .map(|location| follow_path_of_locations(location, &seed_ranges, maps))
+            .min()
+            .unwrap()
+    );
+    println!("{:#?}", follow_path_of_seed_ranges(&seed_ranges, maps));
 }
