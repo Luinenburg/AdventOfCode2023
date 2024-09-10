@@ -51,16 +51,14 @@ fn generate_path_of_location(location: usize, maps: &[Vec<(usize, usize, usize)>
 }
 
 fn follow_path_of_locations(
-    location_max: usize,
+    location: usize,
     seed_ranges: &[(usize, usize)],
     maps: &[Vec<(usize, usize, usize)>],
 ) -> usize {
-    for location in 0..=location_max {
-        let seed = *generate_path_of_location(location, maps).last().unwrap();
-        for (seed_min, seed_max) in seed_ranges {
-            if seed >= *seed_min && seed <= *seed_max {
-                return location;
-            }
+    let seed = *generate_path_of_location(location, maps).last().unwrap();
+    for (seed_min, seed_max) in seed_ranges {
+        if seed >= *seed_min && seed <= *seed_max {
+            return location;
         }
     }
     0
@@ -116,6 +114,7 @@ fn main() {
                         .collect_tuple()
                         .unwrap()
                 })
+                .sorted()
                 .collect::<Vec<_>>();
             val.sort();
             val
@@ -128,8 +127,8 @@ fn main() {
             .into_iter()
             .map(|humidity_to_location| {
                 (
-                    humidity_to_location.1,
-                    humidity_to_location.1 + humidity_to_location.2,
+                    humidity_to_location.0,
+                    humidity_to_location.0 + humidity_to_location.2,
                 )
             })
             .collect()
@@ -148,15 +147,16 @@ fn main() {
         .unwrap();
 
     println!("{:#?}", minimum);
-    println!(
-        "{:#?}",
-        locations
-            .into_iter()
-            .flat_map(|location_range| (location_range.0..location_range.1).collect_vec())
-            .sorted()
-            .map(|location| follow_path_of_locations(location, &seed_ranges, maps))
-            .min()
-            .unwrap()
-    );
+    println!("{:#?}", locations);
+    for location in locations[0].0..locations[0].1 {
+        let seed = follow_path_of_locations(location, &seed_ranges, maps);
+        if seed == 0 {
+            continue;
+        }
+        println!("{:#?}", seed);
+        if seed != 0 {
+            break;
+        }
+    }
     println!("{:#?}", follow_path_of_seed_ranges(&seed_ranges, maps));
 }
