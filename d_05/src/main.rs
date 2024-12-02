@@ -1,33 +1,33 @@
 use itertools::Itertools;
 
+fn navigate_map (map: &Vec<(usize, usize, usize)>, step: usize) -> usize {
+    let mut current_step = step;
+    for (destination, source, offset) in map {
+        if *source > current_step || *source + *offset < current_step {
+            continue;
+        }
+        current_step = *destination + current_step - *source;
+        break;
+    }
+    current_step
+}
+
 fn generate_path_of_seed(seed: usize, maps: &[Vec<(usize, usize, usize)>]) -> Vec<usize> {
     let mut current_step: usize = seed;
     let mut path = vec![current_step];
     for map in maps {
-        for (destination, source, offset) in map {
-            if *source > current_step || *source + *offset < current_step {
-                continue;
-            }
-            current_step = *destination + current_step - *source;
-            break;
-        }
+        current_step = navigate_map(&map, current_step);
         path.push(current_step);
     }
-    return path;
+    path
 }
 
 fn follow_seed_without_gen(seed: usize, maps: &[Vec<(usize, usize, usize)>]) -> usize {
     let mut current_step: usize = seed;
     for map in maps {
-        for (destination, source, offset) in map {
-            if *source > current_step || *source + *offset < current_step {
-                continue;
-            }
-            current_step = *destination + current_step - *source;
-            break;
-        }
+        current_step = navigate_map(&map, current_step);
     }
-    return current_step;
+    current_step
 }
 
 fn generate_path_of_location(location: usize, maps: &[Vec<(usize, usize, usize)>]) -> Vec<usize> {
@@ -38,13 +38,7 @@ fn generate_path_of_location(location: usize, maps: &[Vec<(usize, usize, usize)>
         .rev()
         .collect::<Vec<&Vec<(usize, usize, usize)>>>()
     {
-        for (destination, source, offset) in map {
-            if *destination > current_step || *destination + *offset < current_step {
-                continue;
-            }
-            current_step = *source + current_step - *destination;
-            break;
-        }
+        current_step = navigate_map(&map, current_step);
         path.push(current_step)
     }
     path
@@ -134,8 +128,8 @@ fn main() {
             .collect()
     };
 
-    let location_max: usize =
-        maps.last().unwrap().last().unwrap().0 + maps.last().unwrap().last().unwrap().2;
+    // let location_max: usize =
+    //    maps.last().unwrap().last().unwrap().0 + maps.last().unwrap().last().unwrap().2;
 
     let minimum: usize = seeds
         .iter()
@@ -148,7 +142,7 @@ fn main() {
 
     println!("{:#?}", minimum);
     println!("{:#?}", locations);
-    for location in locations[0].0..locations[0].1 {
+    /*for location in locations[0].0..locations[0].1 {
         let seed = follow_path_of_locations(location, &seed_ranges, maps);
         if seed == 0 {
             continue;
@@ -157,6 +151,6 @@ fn main() {
         if seed != 0 {
             break;
         }
-    }
+    }*/
     println!("{:#?}", follow_path_of_seed_ranges(&seed_ranges, maps));
 }
