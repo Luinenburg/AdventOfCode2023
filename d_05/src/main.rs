@@ -1,44 +1,38 @@
 use itertools::Itertools;
 
-<<<<<<< Updated upstream
 fn generate_path_of_seed(seed: usize, maps: &[Vec<(usize, usize, usize)>]) -> Vec<usize> {
-=======
-fn navigate_map(map: &Vec<(usize, usize, usize)>, step: usize) -> usize {
-    let mut current_step = step;
-    for (destination, source, offset) in map {
-        if *source > current_step || *source + *offset < current_step {
-            continue;
-        }
-        current_step = *destination + current_step - *source;
-        break;
-    }
-    current_step
-}
-
-fn generate_path_of_seed(seed: usize, maps: &[Vec<(usize, usize, usize)>]) -> Vec<usize>
-{
->>>>>>> Stashed changes
     let mut current_step: usize = seed;
     let mut path = vec![current_step];
     for map in maps {
-        current_step = navigate_map(map, current_step);
+        for (destination, source, offset) in map {
+            if *source > current_step || *source + *offset < current_step {
+                continue;
+            }
+            current_step = *destination + current_step - *source;
+            break;
+        }
         path.push(current_step);
     }
-    path
+    return path;
 }
 
 fn follow_seed_without_gen(seed: usize, maps: &[Vec<(usize, usize, usize)>]) -> usize {
     let mut current_step: usize = seed;
     for map in maps {
-        current_step = navigate_map(map, current_step);
+        for (destination, source, offset) in map {
+            if *source > current_step || *source + *offset < current_step {
+                continue;
+            }
+            current_step = *destination + current_step - *source;
+            break;
+        }
     }
-    current_step
+    return current_step;
 }
 
 fn generate_path_of_location(location: usize, maps: &[Vec<(usize, usize, usize)>]) -> Vec<usize> {
     let mut current_step: usize = location;
     let mut path: Vec<usize> = vec![current_step];
-<<<<<<< Updated upstream
     for map in maps
         .into_iter()
         .rev()
@@ -51,10 +45,6 @@ fn generate_path_of_location(location: usize, maps: &[Vec<(usize, usize, usize)>
             current_step = *source + current_step - *destination;
             break;
         }
-=======
-    for map in maps.into_iter().rev().collect::<Vec<&Vec<(usize, usize, usize)>>>() {
-        current_step = navigate_map(map, current_step);
->>>>>>> Stashed changes
         path.push(current_step)
     }
     path
