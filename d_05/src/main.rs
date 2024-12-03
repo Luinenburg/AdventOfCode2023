@@ -1,13 +1,12 @@
 use itertools::Itertools;
 
 fn navigate_map (map: &Vec<(usize, usize, usize)>, step: usize) -> usize {
-    let mut current_step = step;
     for (destination, source, offset) in map {
-        if *source <= current_step && *source + *offset >= current_step {
-            current_step = *destination + current_step - *source;
+        if *source <= step && *source + *offset >= step {
+            return *destination + step - *source;
         }
     }
-    current_step
+    step
 }
 
 fn generate_path_of_seed(seed: usize, maps: &[Vec<(usize, usize, usize)>]) -> Vec<usize> {
@@ -70,8 +69,8 @@ fn follow_path_of_seed_ranges(seed_ranges: &[(usize, usize)], maps: &[Vec<(usize
 
 fn main() {
     let data_input: Vec<Vec<&str>> = include_str!("input.txt")
-        .split("\n\n")
-        .map(|x| x.lines().collect::<Vec<_>>())
+        .split("|")
+        .map(|x| x.trim().lines().collect::<Vec<_>>())
         .collect();
 
     let seeds: Vec<usize> = data_input[0][0]
@@ -86,7 +85,6 @@ fn main() {
         for i in (0..seeds.len()).step_by(2) {
             ls.push((seeds[i], seeds[i] + seeds[i + 1]));
         }
-        ls.sort();
         ls
     };
 
@@ -134,8 +132,6 @@ fn main() {
         .unwrap();
 
     println!("{:#?}", minimum);
-    println!("{:#?}", locations);
-    println!("{:#?}", seed_ranges);
     for value in 0..3903940466 {
         let possible_seed = follow_path_of_locations(value, &seed_ranges, maps);
         if find_seed_in_ranges(possible_seed, &seed_ranges) {
