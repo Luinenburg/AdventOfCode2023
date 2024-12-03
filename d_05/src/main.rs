@@ -3,11 +3,9 @@ use itertools::Itertools;
 fn navigate_map (map: &Vec<(usize, usize, usize)>, step: usize) -> usize {
     let mut current_step = step;
     for (destination, source, offset) in map {
-        if *source > current_step || *source + *offset < current_step {
-            continue;
+        if *source <= current_step && *source + *offset >= current_step {
+            current_step = *destination + current_step - *source;
         }
-        current_step = *destination + current_step - *source;
-        break;
     }
     current_step
 }
@@ -33,10 +31,8 @@ fn follow_seed_without_gen(seed: usize, maps: &[Vec<(usize, usize, usize)>]) -> 
 fn generate_path_of_location(location: usize, maps: &[Vec<(usize, usize, usize)>]) -> Vec<usize> {
     let mut current_step: usize = location;
     let mut path: Vec<usize> = vec![current_step];
-    for map in maps
-        .into_iter()
-        .rev()
-        .collect::<Vec<&Vec<(usize, usize, usize)>>>()
+    let backwards_map: Vec<_> = maps.into_iter().rev().map(|mappings| mappings.iter().map(|mapping| (mapping.1, mapping.0, mapping.2)).collect()).collect();
+    for map in backwards_map
     {
         current_step = navigate_map(&map, current_step);
         path.push(current_step)
@@ -49,20 +45,18 @@ fn follow_path_of_locations(
     seed_ranges: &[(usize, usize)],
     maps: &[Vec<(usize, usize, usize)>],
 ) -> usize {
-    let seed = *generate_path_of_location(location, maps).last().unwrap();
-    for (seed_min, seed_max) in seed_ranges {
-        if seed >= *seed_min && seed <= *seed_max {
-            return location;
-        }
-    }
-    0
+    *generate_path_of_location(location, maps).last().unwrap()
 }
 
-fn follow_path_of_seed_ranges(
-    seed_ranges: &[(usize, usize)],
-    maps: &[Vec<(usize, usize, usize)>],
-) -> usize {
-    let num = seed_ranges
+fn find_seed_in_ranges(possible_seed: usize, seed_ranges: &[(usize, usize)]) -> bool {
+    for seed_range in seed_ranges {
+        if possible_seed >= seed_range.0 && possible_seed <= seed_range.1 { return true; }
+    }
+    false
+}
+
+fn follow_path_of_seed_ranges(seed_ranges: &[(usize, usize)], maps: &[Vec<(usize, usize, usize)>], ) -> usize {
+    seed_ranges
         .iter()
         .map(|seed_range| {
             (seed_range.0..=seed_range.1)
@@ -71,8 +65,7 @@ fn follow_path_of_seed_ranges(
                 .unwrap()
         })
         .min()
-        .unwrap();
-    num
+        .unwrap()
 }
 
 fn main() {
@@ -142,15 +135,17 @@ fn main() {
 
     println!("{:#?}", minimum);
     println!("{:#?}", locations);
-    /*for location in locations[0].0..locations[0].1 {
-        let seed = follow_path_of_locations(location, &seed_ranges, maps);
-        if seed == 0 {
-            continue;
-        }
-        println!("{:#?}", seed);
-        if seed != 0 {
+    println!("{:#?}", seed_ranges);
+    for value in 0..3903940466 {
+        let possible_seed = follow_path_of_locations(value, &seed_ranges, maps);
+        if find_seed_in_ranges(possible_seed, &seed_ranges) {
+            println!("l>s mapping: {:#?}", generate_path_of_location(value, &maps));
+            println!("we found location {:#?}", value);
+            println!("we found seed {:#?}", possible_seed);
+            println!("s>l mapping {:#?}", generate_path_of_seed(possible_seed, maps));
+            println!("from seed to location: {:#?}", follow_seed_without_gen(possible_seed, maps));
             break;
-        }
-    }*/
+    };
+    }
     println!("{:#?}", follow_path_of_seed_ranges(&seed_ranges, maps));
 }

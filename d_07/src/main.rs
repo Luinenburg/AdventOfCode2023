@@ -1,5 +1,5 @@
 use itertools::Itertools;
-use std::collections::HashMap;
+use std::{collections::HashMap, iter::Sum};
 
 #[derive(PartialEq, Debug)]
 enum Hands {
@@ -11,6 +11,28 @@ enum Hands {
     OnePair(usize),
     HighCard(usize),
     None,
+}
+
+impl Hands {
+    pub fn to_int(&self) -> Option<usize> {
+        match self {
+            Hands::FiveOfAKind(x)
+            | Hands::FourOfAKind(x)
+            | Hands::FullHouse(x)
+            | Hands::ThreeOfAKind(x)
+            | Hands::TwoPair(x)
+            | Hands::OnePair(x)
+            | Hands::HighCard(x) => Some(*x),
+            Hands::None => None,
+        }
+    }
+}
+
+impl Copy for Hands {}
+impl Clone for Hands {
+    fn clone(&self) -> Hands {
+        *self
+    }
 }
 
 fn convert_hand_to_value(hand: &str) -> (Hands, Vec<usize>) {
@@ -97,6 +119,30 @@ fn convert_hand_to_value(hand: &str) -> (Hands, Vec<usize>) {
     (best_hand, hand_with_values)
 }
 
+fn sort_hands(unsorted_hands: &[(Hands, Vec<usize>, usize)]) -> Vec<(Hands, Vec<usize>, usize)> {
+    let mut five_of_a_kinds: Vec<&(Hands, Vec<usize>, usize)> = vec![];
+    let mut four_of_a_kinds: Vec<&(Hands, Vec<usize>, usize)> = vec![];
+    let mut full_houses: Vec<&(Hands, Vec<usize>, usize)> = vec![];
+    let mut three_of_a_kinds: Vec<&(Hands, Vec<usize>, usize)> = vec![];
+    let mut two_pairs: Vec<&(Hands, Vec<usize>, usize)> = vec![];
+    let mut pairs: Vec<&(Hands, Vec<usize>, usize)> = vec![];
+    let mut high_hards: Vec<&(Hands, Vec<usize>, usize)> = vec![];
+    for hand in unsorted_hands {
+        match hand.0 {
+            Hands::FiveOfAKind(x) => five_of_a_kinds.push(hand),
+            Hands::FourOfAKind(x) => four_of_a_kinds.push(hand),
+            Hands::FullHouse(x) => full_houses.push(hand),
+            Hands::ThreeOfAKind(x) => three_of_a_kinds.push(hand),
+            Hands::TwoPair(x) => two_pairs.push(hand),
+            Hands::OnePair(x) => pairs.push(hand),
+            Hands::HighCard(x) => high_hards.push(hand),
+            Hands::None => (),
+        }
+    }
+    let mut sorted_hands: Vec<(Hands, Vec<usize>, usize)> = vec![];
+    sorted_hands
+}
+
 fn main() {
     let data_input: Vec<(&str, usize)> = include_str!("example.txt")
         .trim_end()
@@ -109,8 +155,12 @@ fn main() {
 
     //println!("{:#?}", data_input);
     println!("{:#?}", convert_hand_to_value(data_input[2].0));
-    let converted_data: Vec<((Hands, Vec<usize>), usize)> = data_input
+    let converted_data: Vec<(Hands, Vec<usize>, usize)> = data_input
         .iter()
-        .map(|hand| (convert_hand_to_value(hand.0), hand.1))
+        .map(|hand| {
+            let convert_hand: (Hands, Vec<usize>) = convert_hand_to_value(hand.0);
+            (convert_hand.0, convert_hand.1, hand.1)
+        })
         .collect();
+    println!("{:#?}", converted_data);
 }
